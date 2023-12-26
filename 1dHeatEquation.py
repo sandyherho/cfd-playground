@@ -1,91 +1,82 @@
-# Script to compute the numerical solution of the 1D Heat Equation
-
 import numpy as np
-import math
-import matplotlib
-from matplotlib import pyplot as mplot
+import matplotlib.pyplot as plt
+plt.style.use("bmh")
 
-def solveHeatEquation(deltaT,numX,alpha,tMax,temp1,temp2,scheme):
+def solve_heat_equation(delta_t, num_x, alpha, t_max, temp1, temp2, scheme):
 
-    deltaX = 1.0/(numX-1)
+    delta_x = 1.0 / (num_x - 1)
 
     # Compute the stability-related constant
-    C = alpha*deltaT/(deltaX*deltaX)
+    C = alpha * delta_t / (delta_x * delta_x)
 
     # Mesh and initial condition
-    x = np.linspace(0,1,numX)
-    y = temp1*np.ones(x.shape)
+    x = np.linspace(0, 1, num_x)
+    y = temp1 * np.ones(x.shape)
 
     # Fix the hot boundary condition
     y[-1] = temp2
-    mplot.plot(x,y,'-', label='Initial Condition',linewidth=3)
+    plt.plot(x, y, '-', label='Initial Condition', linewidth=3)
 
     time = 0
     count = 0
-    numTimeSteps = (np.rint(tMax/deltaT)).astype(int)
-    pausePercentages = np.array([1,4,10,20,100])
+    num_time_steps = int(np.rint(t_max / delta_t))
+    pause_percentages = np.array([1, 4, 10, 20, 100])
 
-    pauseTimeSteps = np.rint(numTimeSteps*0.01*pausePercentages).astype(int)
+    pause_time_steps = np.rint(num_time_steps * 0.01 * pause_percentages).astype(int)
 
-    triDiag = []
+    tri_diag = []
     if scheme == 'implicit':
-        triDiag = np.empty(shape=(numX-2,numX-2))
-        triDiag.fill(0)
-        for k in range(0,numX-2):
-            triDiag[k][k] = 1+2*C
-            if k+1 <= numX-3:
-                triDiag[k][k+1] = -C
-            if k-1 >= 0:
-                triDiag[k][k-1] = -C
-        rhs = np.zeros(shape=(numX-2,1))
-    
-    while time < tMax:
-        
-         if scheme == 'explicit':
-            yold = np.copy(y)
-            y[1:-1] = yold[1:-1] + C*(yold[2:]-2*yold[1:-1]+yold[0:-2])
-         else:
-            yold = np.copy(y)
-            rhs = yold[1:-1]
-            rhs[0] = rhs[0]+C*yold[0]
-            rhs[-1] = rhs[-1]+C*yold[-1]
-            y[1:-1] = (np.linalg.inv(triDiag).dot(np.array([rhs]).T)).T
+        tri_diag = np.zeros(shape=(num_x - 2, num_x - 2))
+        np.fill_diagonal(tri_diag, 1 + 2 * C)
+        np.fill_diagonal(tri_diag[1:], -C)
+        np.fill_diagonal(tri_diag[:, 1:], -C)
+        rhs = np.zeros(shape=(num_x - 2, 1))
 
-         time = time + deltaT
-         count = count + 1
-         if count in pauseTimeSteps:
-             index = np.where(pauseTimeSteps == count)
-             mplot.plot(x,y,'-', label='%s%% of tMax' %pausePercentages[index][0],linewidth=3)
-            
-    mplot.title('Temperature Distribution across Time', fontsize=24)
-    mplot.xlim(0,1)
-    mplot.xticks(fontsize=14)
-    mplot.ylim(temp1,temp2)
-    mplot.yticks(fontsize=14)
-    mplot.grid()
-    mplot.ylabel('Temperature ($^{o}C$)', fontsize=18, loc='center',rotation=90)
-    mplot.xlabel('X (m)', fontsize=18)
-    mplot.legend(prop={'size': 14})
-    mplot.show(block=True)
+    while time < t_max:
 
+        if scheme == 'explicit':
+            y_old = np.copy(y)
+            y[1:-1] = y_old[1:-1] + C * (y_old[2:] - 2 * y_old[1:-1] + y_old[0:-2])
+        else:
+            y_old = np.copy(y)
+            rhs = y_old[1:-1]
+            rhs[0] += C * y_old[0]
+            rhs[-1] += C * y_old[-1]
+            y[1:-1] = np.linalg.solve(tri_diag, rhs)
+
+        time += delta_t
+        count += 1
+        if count in pause_time_steps:
+            index = np.where(pause_time_steps == count)
+            plt.plot(x, y, '-', label=f'{pause_percentages[index][0]}% of tMax', linewidth=3)
+
+    plt.title('Temperature Distribution across Time', fontsize=24)
+    plt.xlim(0, 1)
+    plt.xticks(fontsize=14)
+    plt.ylim(temp1, temp2)
+    plt.yticks(fontsize=14)
+    plt.grid()
+    plt.ylabel('Temperature ($^{o}C$)', fontsize=18, loc='center', rotation=90)
+    plt.xlabel('X (m)', fontsize=18)
+    plt.legend(prop={'size': 14})
+    plt.show(block=True)
 
 if __name__ == '__main__':
 
-    numX = 101
-    tMax = 10
-    alpha = 0.2 #Plexiglass
+    num_x = 101
+    t_max = 10
+    alpha = 0.2  # Plexiglass
 
     # Boundary Conditions
     temp1 = 20
     temp2 = 100
 
     # Implicit Scheme Settings
-    deltaT = 10
-    scheme = 'implicit'
+#    delta_t = 10
+#    scheme = 'implicit'
 
-    # Explicit Scheme Settings    
-#    deltaT = 0.00024
-#    scheme = 'explicit'
-    
-    solveHeatEquation(deltaT,numX,alpha,tMax,temp1,temp2,scheme)
-    
+    # Explicit Scheme Settings
+    delta_t = 0.0001
+    scheme = 'explicit'
+
+    solve_heat_equation(delta_t, num_x, alpha, t_max, temp1, temp2, scheme)
