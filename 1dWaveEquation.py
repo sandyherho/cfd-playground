@@ -3,6 +3,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+plt.style.use('bmh')
 
 def analyticalFunction(x,x_ref,waveLength,typeOfFunction):
     # Function to create a bunch of initial conditions
@@ -44,7 +45,7 @@ else:
 
 x = np.arange(-0.5, 1.5, dx)
 x_ref_init = 0
-functionType = 'step function'#'multiple sinusoids'#'exponential'
+functionType = 'multiple sinusoids' #'step function' #'exponential' #'single sinusoid' #'step function'#'multiple sinusoids'#'exponential'
 y_init = analyticalFunction(x,x_ref_init,waveLength,functionType)
 
 y_MacCormack = np.copy(y_init)
@@ -80,9 +81,9 @@ for i in range(0,numSteps):
             padding=''
 
         fig, ax = plt.subplots()
-        ax.plot(x, y_MacCormack,'r-',label='MacCormack')
-        ax.plot(x, y_FTBS,'g-',label='FTBS')
-        ax.plot(x, y_analytical,'k-',label='Analytical')
+        ax.plot(x, y_MacCormack, label='MacCormack')
+        ax.plot(x, y_FTBS, label='FTBS')
+        ax.plot(x, y_analytical, label='Analytical')
         ax.legend()
 
         if functionType == 'single sinusoid' or functionType == 'multiple sinusoids':
