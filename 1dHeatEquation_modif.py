@@ -72,11 +72,11 @@ if __name__ == '__main__':
     temp2 = 100
 
     # Implicit Scheme Settings
-    delta_t = 0.1
-    scheme = 'implicit'
+    #delta_t = 0.1
+    #scheme = 'implicit'
 
     # Explicit Scheme Settings
-    # delta_t = 0.00025 # von Neumann delta_t <= 0.00025
-    # scheme = 'explicit'
+    delta_t = 0.00025 # von Neumann delta_t <= 0.00025
+    scheme = 'explicit'
 
     solve_heat_equation(delta_t, num_x, alpha, t_max, temp1, temp2, scheme)
